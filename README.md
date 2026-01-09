@@ -1,4 +1,4 @@
-# OpsKings Development Interview - Round November 2025
+# OpsKings Development Interview
 
 ## Overview
 
@@ -13,6 +13,36 @@ Within the database folder in repository, you will find 2 files
 
 Create free Supabase account, and use SQL scripts outlined above to setup your database and data
 
+Data only contains information about clients, tickets, and ticket types.
+
+Your task is, additionally, to create proper users schema that supports internal team members and client users
+
+## Authentication & Authorization Requirements
+
+### User Types
+
+1. **Internal Team Members** - Company employees (support agents, managers, admins)
+2. **Client Users** - External customers who submitted tickets
+
+### Row Level Security (RLS) Requirements
+
+Implement RLS policies that enforce the following access rules:
+
+| Data | Internal Team Members | Client Users |
+|------|----------------------|--------------|
+| Tickets | View ALL tickets | View ONLY their own tickets |
+| Ticket Messages | View ALL messages | View ONLY messages on their tickets |
+| Ticket Feedback | View ALL feedback | View ONLY feedback on their tickets |
+| Clients | View ALL clients | View ONLY their own client record |
+| Payments | View ALL payments | View ONLY their own payments |
+| Team Members | View ALL team members | View ALL team members (public info only) |
+| Ticket Types | View ALL | View ALL |
+
+**Key Points:**
+- Client users should be completely isolated to their own data
+- Internal team members have full read access to all data for analytics purposes
+- Consider write permissions as well (e.g., clients can create tickets, team members can update ticket status)
+
 ## Technical Requirements
 
 - NextJS
@@ -21,6 +51,8 @@ Create free Supabase account, and use SQL scripts outlined above to setup your d
 - TanStack Query
 - Vercel for Deployment
 - E2E type-safety - avoid using any() if possible
+- BetterAuth for Authentication of internal team members and clients
+- Supabase Row Level Security Set Up
 - Git for sharing the solution
 
 ---
@@ -129,6 +161,8 @@ Create a **table or list view** showing client insights:
 - Make it searchable by client name
 - Add pagination
 
+**Note:** This view is only accessible to internal team members.
+
 ---
 
 ### 6. **Response Time Analysis** (Statistical Analysis)
@@ -153,17 +187,34 @@ Create a **box plot, histogram, or summary statistics view** showing:
 
 ---
 
-### 6. Bonus (Optional)
+### 7. **Client Portal** (Client User View)
+
+Create a simplified view for client users that shows:
+
+- Their own tickets (list with status, priority, created date)
+- Ability to create new tickets
+- Ability to view ticket details and messages
+- Ability to leave feedback on resolved tickets
+
+**Note:** Client users should NOT have access to:
+- Dashboard analytics
+- Team performance metrics
+- Other clients' data
+- Client analysis view
+
+---
+
+### 8. Bonus (Optional)
 
 - Implement better-auth as authentication mechanism for the system
 - Adjust RLS policies to work with better-auth authentication
+- Implement role-based UI (show/hide features based on user type)
 
 ---
 
 ## Performance Considerations
 
-⚠️ **Note:** The database contains ~21,000 tickets. Your solution
-must handle this volume efficiently.
+⚠️ **Note:** The database contains ~40,000 tickets. Your solution must handle this volume efficiently.
 
 ### Expected Performance:
 
@@ -195,6 +246,8 @@ must handle this volume efficiently.
     - Any assumptions made
     - Future improvements you would make
     - Which indexes you added and why
+    - **How you implemented RLS for multi-tenant access (client isolation vs team member full access)**
+    - How did you handle RLS with Better Auth
     - Any materialized views or database optimizations
     - Performance testing results
     - How your solution would scale to 100k+ tickets
@@ -208,6 +261,6 @@ must handle this volume efficiently.
 
 ## Final Words
 
-You are welcome to use any of the tools available online, including AI coding tools like Codex, Claude Code, Cursor (we would love to see your thinking proces and how do you use AI in development), as well as any libraries, packages, or components you think could help you.
+You are welcome to use any of the tools available online, including AI coding tools like Codex, Claude Code, Cursor (we would love to see your thinking process and how do you use AI in development), as well as any libraries, packages, or components you think could help you.
 
-You are welcome do make any architectural decision needed in order to fulfill performance requirements.
+You are welcome to make any architectural decision needed in order to fulfill performance requirements.
