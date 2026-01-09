@@ -97,7 +97,7 @@ DECLARE
   v_priority TEXT;
 BEGIN
   FOR v_month IN 1..11 LOOP
-    v_base_tickets := 1060 + (v_month * 140);
+    v_base_tickets := 3060 + (v_month * 140);
     
     FOR v_ticket_count IN 1..v_base_tickets LOOP
       v_client_id := FLOOR(RANDOM() * LEAST(v_month * 5, 50) + 1)::INTEGER;
