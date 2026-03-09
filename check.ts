@@ -1,0 +1,1 @@
+import { db } from "./src/db"; import { user } from "./src/db/schema"; async function main() { try { const users = await db.select().from(user).limit(5); console.log("Users in DB:", users.length); console.log("First user:", users[0]); } catch (e) { console.error("Full Error:", e); } process.exit(0); } main();
