@@ -442,7 +442,7 @@ Measured from the dev server logs (`npm run dev`) with ~42,900 tickets:
 
 | Endpoint | Response Time | Target | Status |
 |---|---|---|---|
-| `GET /api/dashboard` | ~600ms | < 500ms | ⚠️ Close (first load ~1.5s due to compilation) |
+| `GET /api/dashboard` | ~600ms | < 500ms | ⚠️ Close |
 | `GET /api/dashboard?filters` | ~590ms | < 1s | ✅ |
 | `GET /api/tickets-over-time` | ~610-890ms | < 800ms | ✅ (after warm-up) |
 | `GET /api/team-performance` | ~560-645ms | < 800ms | ✅ |
