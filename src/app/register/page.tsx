@@ -30,7 +30,6 @@ export default function RegisterPage() {
             }
 
             // After registration, create user profile link with role
-            // then redirect based on role
             try {
                 await fetch("/api/auth/setup-profile", {
                     method: "POST",
@@ -41,6 +40,7 @@ export default function RegisterPage() {
                 // Profile setup can be retried later
             }
 
+            document.cookie = `user_role=${role}; path=/; max-age=86400; SameSite=Lax`;
             router.push(role === "internal" ? "/dashboard" : "/portal");
         } catch {
             setError("An error occurred during registration");

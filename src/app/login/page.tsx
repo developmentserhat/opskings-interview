@@ -27,12 +27,20 @@ export default function LoginPage() {
                 return;
             }
 
-            // Fetch user role to decide where to redirect
-            const meRes = await fetch("/api/auth/me");
-            if (meRes.ok) {
-                const user = await meRes.json();
-                router.push(user.role === "internal" ? "/dashboard" : "/portal");
-            } else {
+            // Fetch user role to decide where to redirect & save to cookie for middleware
+            try {
+                const meRes = await fetch("/api/auth/me");
+                if (meRes.ok) {
+                    const user = await meRes.json();
+                    // Set a non-HttpOnly cookie that middleware can read instantly
+                    document.cookie = `user_role=${user.role}; path=/; max-age=86400; SameSite=Lax`;
+                    router.push(user.role === "internal" ? "/dashboard" : "/portal");
+                } else {
+                    document.cookie = `user_role=internal; path=/; max-age=86400; SameSite=Lax`;
+                    router.push("/dashboard");
+                }
+            } catch {
+                document.cookie = `user_role=internal; path=/; max-age=86400; SameSite=Lax`;
                 router.push("/dashboard");
             }
         } catch {

@@ -20,28 +20,14 @@ export async function middleware(request: NextRequest) {
         request.cookies.get("__Secure-better-auth.session_token")?.value;
 
     const isAuthenticated = !!sessionToken;
+    const userRole = request.cookies.get("user_role")?.value || "client"; // Default to client if unknown
 
     // Allow public paths
     if (publicPaths.some((p) => pathname.startsWith(p))) {
         // If already authenticated, redirect away from login/register
         if (isAuthenticated) {
-            // Fetch role from the me endpoint
-            try {
-                const meUrl = new URL("/api/auth/me", request.url);
-                const meResponse = await fetch(meUrl.toString(), {
-                    headers: {
-                        cookie: request.headers.get("cookie") || "",
-                    },
-                });
-
-                if (meResponse.ok) {
-                    const user = await meResponse.json();
-                    const redirectPath = user.role === "internal" ? "/dashboard" : "/portal";
-                    return NextResponse.redirect(new URL(redirectPath, request.url));
-                }
-            } catch {
-                // If me endpoint fails, let them through
-            }
+            const redirectPath = userRole === "internal" ? "/dashboard" : "/portal";
+            return NextResponse.redirect(new URL(redirectPath, request.url));
         }
         return NextResponse.next();
     }
@@ -53,38 +39,26 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // For authenticated users, enforce role-based routing
-    // We check role by calling the me endpoint
-    try {
-        const meUrl = new URL("/api/auth/me", request.url);
-        const meResponse = await fetch(meUrl.toString(), {
-            headers: {
-                cookie: request.headers.get("cookie") || "",
-            },
-        });
-
-        if (!meResponse.ok) {
-            // Session invalid, clear and redirect to login
-            const loginUrl = new URL("/login", request.url);
-            return NextResponse.redirect(loginUrl);
-        }
-
-        const user = await meResponse.json();
-
-        // Client users cannot access /dashboard/*
-        if (user.role === "client" && pathname.startsWith("/dashboard")) {
-            return NextResponse.redirect(new URL("/portal", request.url));
-        }
-
-        // Internal users cannot access /portal/*
-        if (user.role === "internal" && pathname.startsWith("/portal")) {
-            return NextResponse.redirect(new URL("/dashboard", request.url));
-        }
-    } catch {
-        // On error, allow through (don't block authenticated users)
+    // For authenticated users, enforce role-based routing using the cookie
+    // Client users cannot access /dashboard/*
+    if (userRole === "client" && pathname.startsWith("/dashboard")) {
+        return NextResponse.redirect(new URL("/portal", request.url));
     }
 
-    return NextResponse.next();
+    // Internal users cannot access /portal/*
+    if (userRole === "internal" && pathname.startsWith("/portal")) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // Pass down the user role as a header so server components can access it instantly if needed
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-user-role", userRole);
+
+    return NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
 }
 
 export const config = {
